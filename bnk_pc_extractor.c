@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 	FILE *out = NULL;
 	u32 i;
 	header head;
-	entry *entries;
+	entry *entries = NULL;
 	char *name = NULL;
 	char *filename = NULL;
 	int r = 0;
@@ -187,6 +187,7 @@ int main(int argc, char *argv[])
 end:
 	free(name);
 	free(filename);
+	free(entries);
 
 	if (f != NULL)
 	{

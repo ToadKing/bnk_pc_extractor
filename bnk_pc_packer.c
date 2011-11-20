@@ -95,10 +95,10 @@ int main(int argc, char *argv[])
 	FILE *sb = NULL;
 	u32 i;
 	header head;
-	entry *entries;
+	entry *entries = NULL;
 	int r = 0;
-	char *soundboot;
-	char *soundboot2;
+	char *soundboot = NULL;
+	char *soundboot2 = NULL;
 
 	if (argc > 4)
 	{

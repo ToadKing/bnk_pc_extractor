@@ -94,10 +94,13 @@ int main(int argc, char *argv[])
 {
 	FILE *f = NULL;
 	FILE *out = NULL;
+	FILE *sb = NULL;
 	u32 i;
 	header head;
 	entry *entries;
 	int r = 0;
+	char *soundboot;
+	char *soundboot2;
 
 	printf("WARNING! This packer does not create usable files yet, only use this if you are testing your own changes!\n\n");
 
@@ -188,14 +191,21 @@ int main(int argc, char *argv[])
 	// loop 3: go back and write updated entries
 
 	fseek(out, sizeof(header), SEEK_SET);
+	fwrite(entries, sizeof(entry), head.count, out);
 
-	for (i = 0; i < head.count; i++)
-	{
-		fwrite(&(entries[i]), sizeof(entry), 1, out);
-	}
+	soundboot = malloc(strlen(argv[argc - 1]));
+	soundboot2 = malloc(strlen(argv[argc - 1]) + 10);
+	memcpy(soundboot, argv[argc - 1], strlen(argv[argc - 1]) + 1);
+	soundboot[strrchr(soundboot, '.') - soundboot] = 0;
+	sprintf(soundboot2, "%s.mbnk_pc", soundboot);
+	sb = fopen(soundboot2, "wb");
+	fwrite(&head, sizeof(header), 1, sb);
+	fwrite(entries, sizeof(entry), head.count, sb);
 
 end:
 	free(entries);
+	free(soundboot);
+	free(soundboot2);
 
 	if (f != NULL)
 	{
@@ -205,6 +215,11 @@ end:
 	if (out != NULL)
 	{
 		fclose(out);
+	}
+
+	if (sb != NULL)
+	{
+		fclose(sb);
 	}
 
 	return r;

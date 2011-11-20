@@ -41,8 +41,6 @@
 #include <tchar.h>
 #include <direct.h>
 
-#define is_wav(a) ((a)[0] == 'R' && (a)[1] == 'I' && (a)[2] == 'F' && (a)[3] == 'F')
-
 typedef unsigned __int8 u8;
 typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
@@ -101,8 +99,6 @@ int main(int argc, char *argv[])
 	int r = 0;
 	char *soundboot;
 	char *soundboot2;
-
-	printf("WARNING! This packer does not create usable files yet, only use this if you are testing your own changes!\n\n");
 
 	if (argc > 4)
 	{
@@ -193,7 +189,7 @@ int main(int argc, char *argv[])
 	fseek(out, sizeof(header), SEEK_SET);
 	fwrite(entries, sizeof(entry), head.count, out);
 
-	soundboot = malloc(strlen(argv[argc - 1]));
+	soundboot = malloc(strlen(argv[argc - 1]) + 1);
 	soundboot2 = malloc(strlen(argv[argc - 1]) + 10);
 	memcpy(soundboot, argv[argc - 1], strlen(argv[argc - 1]) + 1);
 	soundboot[strrchr(soundboot, '.') - soundboot] = 0;

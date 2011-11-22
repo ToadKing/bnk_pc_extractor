@@ -69,7 +69,7 @@ struct _header
 struct _entry
 {
 	u32 u1; // unknown; seems to increase with each entry, maybe an ID?
-	u64 offset; // offset of data in the file, including 32-byte header.
+	u64 offset; // offset of data in the file, including 28-byte header.
 		    // each file is padded with null bytes to the next offset
 		    // that's a multiple of 0x800, including padding after the
 		    // last file

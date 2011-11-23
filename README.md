@@ -15,7 +15,7 @@ How to use
   file is in. (You might want to copy it to its own folder before dragging and
   dropping it.)
 * Hard way/repacking files: Run the programs in the command line and follow
-  the instructions it gives for the two files.
+  the instructions it gives for the two programs.
 
 How to make .wav files usable
 -----------------------------
@@ -29,3 +29,19 @@ Follow steps 5-12 in my
 [Custom Radio Stations Guide](https://www.saintsrowmods.com/forum/viewtopic.php?f=9&t=2).
 Note that it's possible that other types of sounds use other settings than
 those in the guide, but I'm pretty sure they all at least use Vorbis.
+
+Changelog
+---------
+* 1.3
+    * Made filelist appear in the metadata log, now you don't have to fuss
+      with superlong command line arguments. Also fixes audiobank files with
+      many files breaking in the Windows command prompt.
+* 1.2
+    * Fixed bug with extracting files if the DMAV section was larger than the
+      audio file.
+* 1.1
+    * Added support for extracting DMAV sections of voice audio banks.
+    * bnk_pc_extractor now uses a default log file location if none is
+      supplied.
+* 1.0
+    * Initial release.

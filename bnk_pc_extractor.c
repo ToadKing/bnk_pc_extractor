@@ -85,6 +85,7 @@ int main(int argc, char *argv[])
 		goto error;
 	}
 
+	fprintf(out, "ONLY EDIT THE FILENAMES\n");
 	fprintf(out, "HEADER:\n");
 	fprintf(out, "magic:  \"VWSBPC  \"\n");
 	fprintf(out, "k1:     0x%08X\n", head.k1);
@@ -93,7 +94,7 @@ int main(int argc, char *argv[])
 	fprintf(out, "k3:     0x%08X\n", head.k3);
 	fprintf(out, "count:  0x%08X\n", head.count);
 
-	entries = malloc(sizeof(entry) * head.count);
+	entries = calloc(head.count, sizeof(entry));
 
 	for(i = 0; i < head.count; i++)
 	{
@@ -107,12 +108,6 @@ int main(int argc, char *argv[])
 			printf("unexpected end of file\n");
 			goto error;
 		}
-
-		fprintf(out, "\n%05u:\n", i);
-		fprintf(out, "id:     0x%08X\n", entries[i].id);
-		fprintf(out, "offset: 0x%08X\n", entries[i].offset);
-		fprintf(out, "dmav:   0x%08X\n", entries[i].dmav);
-		fprintf(out, "length: 0x%08X\n", entries[i].length);
 
 		buffer = malloc(entries[i].length + entries[i].dmav);
 
@@ -135,6 +130,11 @@ int main(int argc, char *argv[])
 		fclose(sav);
 
 		free(buffer);
+		fprintf(out, "\n%05u:  %s\n", i, filename);
+		fprintf(out, "id:     0x%08X\n", entries[i].id);
+		fprintf(out, "offset: 0x%08X\n", entries[i].offset);
+		fprintf(out, "dmav:   0x%08X\n", entries[i].dmav);
+		fprintf(out, "length: 0x%08X\n", entries[i].length);
 	}
 
 end:

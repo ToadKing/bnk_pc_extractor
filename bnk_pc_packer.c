@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 		char filename[1024];
 		entries[i].offset = ftell(out);
 
-		if (entries[i].dmav)
+		if (entries[i].dmav != 0)
 		{
 			memcpy(_filename, argv[i + 2], strlen(argv[i + 2]) + 1);
 			_filename[strrchr(_filename, '.') - _filename] = 0;

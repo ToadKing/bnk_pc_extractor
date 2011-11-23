@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
 			fread(buffer, entries[i].dmav, 1, in);
 			fclose(in);
 			fwrite(buffer, entries[i].dmav, 1, out);
+			free(buffer);
 		}
 
 		in = fopen(argv[i + 2], "rb");

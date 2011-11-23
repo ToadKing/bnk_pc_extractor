@@ -104,7 +104,8 @@ int main(int argc, char *argv[])
 
 		if (fread(&(entries[i]), sizeof(entry), 1, f) != 1)
 		{
-			break;
+			printf("unexpected end of file\n");
+			goto error;
 		}
 
 		fprintf(out, "\n%05u:\n", i);
@@ -120,27 +121,18 @@ int main(int argc, char *argv[])
 		fread(buffer, entries[i].length + entries[i].dmav, 1, f);
 		fseek(f, currPos, SEEK_SET);
 
-		sprintf(filename, "%s_%05u.%s", name, i, entries[i].dmav ? "dmav" : is_wav(buffer) ? "wav" : "bin");
-		sav = fopen(filename, "wb");
-
-		if (entries[i].dmav && entries[i].length < entries[i].dmav)
+		if (entries[i].dmav != 0)
 		{
-			printf("entry %d too small for DMAV, was %d, needs at least %d for DMAV\n", i, entries[i].length, entries[i].dmav);
-			fclose(sav);
-			free(buffer);
-			goto error;
-		}
-
-		fwrite(buffer, entries[i].dmav ? entries[i].dmav : entries[i].length, 1, sav);
-		fclose(sav);
-
-		if (entries[i].dmav)
-		{
-			sprintf(filename, "%s_%05u.%s", name, i, is_wav(&(buffer[entries[i].dmav])) ? "wav" : "bin");
+			sprintf(filename, "%s_%05u.dmav", name, i);
 			sav = fopen(filename, "wb");
-			fwrite(&(buffer[entries[i].dmav]), entries[i].length/* - entries[i].dmav*/, 1, sav);
+			fwrite(buffer, entries[i].dmav, 1, sav);
 			fclose(sav);
 		}
+
+		sprintf(filename, "%s_%05u.%s", name, i, is_wav(&(buffer[entries[i].dmav])) ? "wav" : "bin");
+		sav = fopen(filename, "wb");
+		fwrite(&(buffer[entries[i].dmav]), entries[i].length, 1, sav);
+		fclose(sav);
 
 		free(buffer);
 	}

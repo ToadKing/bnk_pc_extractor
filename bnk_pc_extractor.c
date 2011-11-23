@@ -25,61 +25,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef _CRT_SECURE_NO_WARNINGS
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef max
-#define max(a, b) ((a) > (b) ? (a) : (b))
-#endif
-
-#include <Windows.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <tchar.h>
-#include <direct.h>
-
-#define is_wav(a) ((a)[0] == 'R' && (a)[1] == 'I' && (a)[2] == 'F' && (a)[3] == 'F')
-
-typedef unsigned __int8 u8;
-typedef unsigned __int16 u16;
-typedef unsigned __int32 u32;
-typedef unsigned __int64 u64;
-
-#pragma pack(push,1)
-
-// all values are little-endian
-
-// k#: Value is predictable or can be computed, but use may not be known
-// u#: Value use is unknown and cannot be predicted or computed
-
-struct _header
-{
-	u64 magic; // "VWSBPC  "
-	u32 k1; // usually 0x00000000
-	u32 k2; // usually 0x00010002
-	u32 u1; // unknown; maybe an ID?
-	u32 k3; // pointer to the (count + 2)th entry?
-		// essentially sizeof(header) + ((count + 1) * 16)
-	u32 count; // number of entry items
-};
-
-struct _entry
-{
-	u32 u1; // unknown; seems to increase with each entry, maybe an ID?
-	u64 offset; // offset of data in the file, including 28-byte header.
-		    // each file is padded with null bytes to the next offset
-		    // that's a multiple of 0x800, including padding after the
-		    // last file
-	u32 length; // file length
-};
-
-#pragma pack(pop)
-
-typedef struct _header header;
-typedef struct _entry entry;
+#include "bnk_pc.h"
 
 int main(int argc, char *argv[])
 {
@@ -88,50 +34,46 @@ int main(int argc, char *argv[])
 	u32 i;
 	header head;
 	entry *entries = NULL;
-	char *name = NULL;
-	char *filename = NULL;
+	char name[1024];
 	int r = 0;
 
-	if (argc > 2)
+	if (argc > 3 || argc < 2)
 	{
-		f = fopen(argv[1], "rb");
-
-		if (f == NULL)
-		{
-			printf("file can't be opened\n");
-			goto error;
-		}
-
-		out = fopen(argv[2], "w");
-
-		if (out == NULL)
-		{
-			printf("log can't be opened for writin\n");
-			goto error;
-		}
-	}
-	else if (argc > 1)
-	{
-		f = fopen(argv[1], "rb");
-
-		if (f == NULL)
-		{
-			printf("file can't be opened\n");
-			goto error;
-		}
-
-		out = stdout;
-	}
-	else
-	{
-		printf("usage: %s file.bnk_pc [log.txt]\n(files are not dumped if log is enabled)\n", argv[0]);
+		printf("bnk_pc_extractor " VERSION "\n"
+		       "usage: %s file.bnk_pc [log.txt]\n"
+		       "files are dumped to the .bnk_pc file's directory\n"
+		       "log is dumped to <filename>.txt if no log file specified\n", argv[0]);
 		goto error;
 	}
 
-	name = malloc(strlen(argv[1]) + 1);
-	filename = malloc(strlen(argv[1]) + 10);
 	memcpy(name, argv[1], strlen(argv[1]) + 1);
 	name[strrchr(name, '.') - name] = 0;
+
+	f = fopen(argv[1], "rb");
+
+	if (f == NULL)
+	{
+		printf("file %s can't be opened\n", argv[1]);
+		goto error;
+	}
+
+	if (argc == 2)
+	{
+		char logname[1024];
+		sprintf(logname, "%s.txt", name);
+		out = fopen(logname, "w");
+	}
+	else
+	{
+		out = fopen(argv[2], "w");
+	}
+
+	if (out == NULL)
+	{
+		printf("log %s can't be opened for writing\n", argv[2]);
+		goto error;
+	}
+
 	fread(&head, sizeof(header), 1, f);
 
 	if (head.magic != 0x2020435042535756ULL /* "VWSBPC  " */)
@@ -142,51 +84,68 @@ int main(int argc, char *argv[])
 			printf("file incorrect format");
 		goto error;
 	}
-	
-	fprintf(out, "HEADER\n");
+
+	fprintf(out, "HEADER:\n");
 	fprintf(out, "magic:  \"VWSBPC  \"\n");
 	fprintf(out, "k1:     0x%08X\n", head.k1);
 	fprintf(out, "k2:     0x%08X\n", head.k2);
-	fprintf(out, "u1:     0x%08X\n", head.u1);
+	fprintf(out, "id:     0x%08X\n", head.id);
 	fprintf(out, "k3:     0x%08X\n", head.k3);
 	fprintf(out, "count:  0x%08X\n", head.count);
 
-	entries = malloc(sizeof(entry) * head.count);;
+	entries = malloc(sizeof(entry) * head.count);
 
 	for(i = 0; i < head.count; i++)
 	{
-		entry e = entries[i];
+		int currPos;
+		u8 *buffer;
+		char filename[1024];
+		FILE *sav;
 
-		if (fread(&e, sizeof(entry), 1, f) != 1)
+		if (fread(&(entries[i]), sizeof(entry), 1, f) != 1)
 		{
 			break;
 		}
 
 		fprintf(out, "\n%05u:\n", i);
-		fprintf(out, "u1:     0x%08X\n", e.u1);
-		fprintf(out, "offset: 0x%016llX\n", e.offset);
-		fprintf(out, "length: 0x%08X\n", e.length);
+		fprintf(out, "id:     0x%08X\n", entries[i].id);
+		fprintf(out, "offset: 0x%08X\n", entries[i].offset);
+		fprintf(out, "dmav:   0x%08X\n", entries[i].dmav);
+		fprintf(out, "length: 0x%08X\n", entries[i].length);
 
-		if (argc == 2)
+		buffer = malloc(entries[i].length + entries[i].dmav);
+
+		currPos = ftell(f);
+		fseek(f, entries[i].offset, SEEK_SET);
+		fread(buffer, entries[i].length + entries[i].dmav, 1, f);
+		fseek(f, currPos, SEEK_SET);
+
+		sprintf(filename, "%s_%05u.%s", name, i, entries[i].dmav ? "dmav" : is_wav(buffer) ? "wav" : "bin");
+		sav = fopen(filename, "wb");
+
+		if (entries[i].dmav && entries[i].length < entries[i].dmav)
 		{
-			int currPos = ftell(f);
-			u8 *buffer = malloc(e.length);
-			FILE *sav;
-			fseek(f, e.offset, SEEK_SET);
-			fread(buffer, e.length, 1, f);
-			fseek(f, currPos, SEEK_SET);
-
-			sprintf(filename, "%s_%05u.%s", name, i, is_wav(buffer) ? "wav" : "bin");
-			sav = fopen(filename, "wb");
-			fwrite(buffer, e.length, 1, sav);
+			printf("entry %d too small for DMAV, was %d, needs at least %d for DMAV\n", i, entries[i].length, entries[i].dmav);
 			fclose(sav);
 			free(buffer);
+			goto error;
 		}
+
+		fwrite(buffer, entries[i].dmav ? entries[i].dmav : entries[i].length, 1, sav);
+		fclose(sav);
+
+		if (entries[i].dmav)
+		{
+			sprintf(filename, "%s_%05u.%s", name, i, is_wav(&(buffer[entries[i].dmav])) ? "wav" : "bin");
+			sav = fopen(filename, "wb");
+			fwrite(&(buffer[entries[i].dmav]), entries[i].length/* - entries[i].dmav*/, 1, sav);
+			fclose(sav);
+		}
+
+		free(buffer);
 	}
 
 end:
-	free(name);
-	free(filename);
 	free(entries);
 
 	if (f != NULL)

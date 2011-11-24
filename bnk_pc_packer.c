@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 		goto error;
 	}
 
-	head.magic = 0x2020435042535756ULL;
+	head.magic = BNK_PC_HEADER;
 
 	fscanf(f, "ONLY EDIT THE FILENAMES\n");
 	fscanf(f, "HEADER:\n");

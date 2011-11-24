@@ -72,6 +72,8 @@ struct _entry
 	u32 length; // size of file
 };
 
+#define BNK_PC_HEADER 0x2020435042535756ULL
+
 #pragma pack(pop)
 
 typedef struct _header header;

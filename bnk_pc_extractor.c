@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
 	fread(&head, sizeof(header), 1, f);
 
-	if (head.magic != 0x2020435042535756ULL /* "VWSBPC  " */)
+	if (head.magic != BNK_PC_HEADER)
 	{
 		if (head.magic == 0x0000001844484B42ULL /* "BHKD\x18\x00\x00\x00" */)
 			printf("file incorrect format, try %s_media.bnk_pc instead\n", name);

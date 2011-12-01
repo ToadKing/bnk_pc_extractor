@@ -26,7 +26,7 @@ ww2ogg, and the .ogg it makes over revorb.
 How to make your own .wav files for packaging
 ---------------------------------------------
 Follow steps 5-12 in my
-[Custom Radio Stations Guide](https://www.saintsrowmods.com/forum/viewtopic.php?f=9&t=2).
+[Custom Radio Stations Guide](https://www.saintsrowmods.com/forum/index.php?threads/custom-radio-stations-guide.2/).
 Note that it's possible that other types of sounds use other settings than
 those in the guide, but I'm pretty sure they all at least use Vorbis.
 

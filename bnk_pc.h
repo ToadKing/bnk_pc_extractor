@@ -43,6 +43,8 @@ typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
 
+#define BNK_PC_HEADER 0x2020435042535756ULL
+
 #pragma pack(push,1)
 
 // all values are little-endian
@@ -71,8 +73,6 @@ struct _entry
 	u32 dmav; // size of DMAV before before file, 0 if no DMAV
 	u32 length; // size of file
 };
-
-#define BNK_PC_HEADER 0x2020435042535756ULL
 
 #pragma pack(pop)
 

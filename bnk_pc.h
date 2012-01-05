@@ -52,7 +52,7 @@ typedef unsigned __int64 u64;
 // k#: Value is predictable or can be computed, but use may not be known
 // u#: Value use is unknown and cannot be predicted or computed
 
-struct _header
+typedef struct
 {
 	u64 magic; // "VWSBPC  "
 	u32 k1; // usually 0x00000000
@@ -61,9 +61,9 @@ struct _header
 	u32 k3; // pointer to the (count + 2)th entry?
 		// essentially sizeof(header) + ((count + 1) * 16)
 	u32 count; // number of entry items
-};
+} header;
 
-struct _entry
+typedef struct
 {
 	u32 id; // technically unknown, but most likely an ID
 	u32 offset; // offset of data in the file, including 28-byte header.
@@ -72,11 +72,8 @@ struct _entry
 		    // last file
 	u32 dmav; // size of DMAV before before file, 0 if no DMAV
 	u32 length; // size of file
-};
+} entry;
 
 #pragma pack(pop)
-
-typedef struct _header header;
-typedef struct _entry entry;
 
 #define is_wav(a) ((a)[0] == 'R' && (a)[1] == 'I' && (a)[2] == 'F' && (a)[3] == 'F')

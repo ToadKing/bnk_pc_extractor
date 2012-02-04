@@ -3,15 +3,21 @@ DMAV:
 4-7: 1 (version?)
 8-11: Persona ID (<Persona_id> in character's voice table, voc_sb_line_sit.xtbl, and voice_dynamic_dialog_events.xtbl, <wwise_id> in audio_personas.xtbl)
 12-15: Voiceline ID (<Voiceline_id> in voice_control.xtbl, <wwise_id> in audio_line_tags.xtbl)
-16-?: ?
+16-19: some offset, same as 28-31
+20-23: ?
+24-27: ?
+28-31: some offset, same as 16-19
+32-35: ?
+
+SOME DATA (at offset [16-19] + DMAV header size [36]), 212 bytes long:
+0-4: if not equal to 2, then this is subtitle data? 0 means no subtitles and the DMAV section is over
 
 SUBTITLES:
-0-3: length from start of subtitle data to start of third to last entry OR length of subtitle data excluding last three entries (2nd copy of 2nd Unknown and both 3rd Unknown)
-4-7: length of last subtitle entry?
-8-11: length from start of subtitle data to start of last entry OR length of subtitle data excluding last entry (2nd copy of 3rd Unknown)
+0-3: length of last/longest subtitle entry?
+4-7: length from start of subtitle data to start of last entry OR length of subtitle data excluding last entry (2nd copy of 3rd Unknown)
+8-11: ?
 12-15: ?
-16-19: ?
-20-end: subtitle data (UTF-16, null-terminated)
+16-end: subtitle data (UTF-16, null-terminated)
 
 SUBTITLE ORDER (come in pairs of identical sets; dialects?):
 English

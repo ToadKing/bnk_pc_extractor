@@ -44,6 +44,7 @@ typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
 
 #define BNK_PC_HEADER 0x2020435042535756ULL
+#define DMAV_HEADER 0x56414D44UL
 
 #pragma pack(push,1)
 
@@ -73,6 +74,27 @@ typedef struct
 	u32 dmav; // size of DMAV before before file, 0 if no DMAV
 	u32 length; // size of file
 } entry;
+
+typedef struct
+{
+	u32 magic; // "DMAV"
+	u32 version; // 1
+	u32 persona_id; // <Persona_id> in character's voice table, voc_sb_line_sit.xtbl, and voice_dynamic_dialog_events.xtbl, <wwise_id> in audio_personas.xtbl
+	u32 voiceline_id; // <Voiceline_id> in voice_control.xtbl, <wwise_id> in audio_line_tags.xtbl
+	u32 offset1; // same as offset2
+	u32 u1;
+	u32 u2;
+	u32 offset2; // same as offset1
+	u32 u3;
+} dmav_header;
+
+typedef struct
+{
+	u32 last; // length of last/longest subtitle entry?
+	u32 offset; // length from start of subtitle data to start of last entry OR length of subtitle data excluding last entry (2nd copy of 3rd Unknown)
+	u32 u1;
+	u32 u2;
+} dmav_subtitle_header;
 
 #pragma pack(pop)
 

@@ -140,7 +140,7 @@ int main(int argc, char *argv[])
 	o = fopen(oname, "w");
 	fprintf(o, "<title>%s DMAV</title>\n", name);
 	fprintf(o, "<pre><b>HEADER:</b>\n");
-	fprintf(o, "magic:   DMAV\n");
+	fprintf(o, "magic:        \"DMAV\"\n");
 	fprintf(o, "version:      0x%08X\n", head.version);
 	fprintf(o, "persona_id:   0x%08X\n", head.persona_id);
 	fprintf(o, "voiceline_id: 0x%08X\n", head.voiceline_id);

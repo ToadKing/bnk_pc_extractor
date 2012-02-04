@@ -39,40 +39,40 @@ int parse_table(int langnum)
 	char buffer[1024];
 	FILE *o;
 	u16 len = 0, i;
-	
+
 	sprintf(name, "charlist_%s.dat", langs[langnum / 2]);
 	o = fopen(name, "r");
-	
+
 	if (o == NULL)
 	{
 		printf("cannot open %s for character data\n", name);
 		return 1;
 	}
-	
+
 	while (len == 0)
 	{
 		int t;
 		fgets(buffer, sizeof(buffer), o);
-		
+
 		if (feof(o))
 		{
 			printf("malformed charlist file (%s)\n", name);
 			fclose(o);
 			return 1;
 		}
-		
+
 		sscanf(buffer, "count=%hu\r\n", &len);
 	}
-	
+
 	char_tbl_len = len;
-	
+
 	for (i = 0; i < len; i++)
 	{
 		fscanf(o, "%d\r\n", &char_tbl[i]);
 	}
-	
+
 	fclose(o);
-	
+
 	return 0;
 }*/
 
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	int r = 0, count = 0, t = 0, i = 0;
 	char name[1024];
 	char oname[1024];
-	
+
 	if (argc != 2)
 	{
 		printf("dmav_subtitles " VERSION "\n"
@@ -95,31 +95,31 @@ int main(int argc, char *argv[])
 
 	memcpy(name, argv[1], strlen(argv[1]) + 1);
 	name[strrchr(name, '.') - name] = 0;
-	
-	f = fopen(argv[1], "r");
-	
+
+	f = fopen(argv[1], "rb");
+
 	if (f == NULL)
 	{
 		printf("cannot open file\n");
 		goto error;
 	}
-	
+
 	fread(&head, sizeof(dmav_header), 1, f);
-	
+
 	if (head.magic != DMAV_HEADER)
 	{
 		printf("not a dmav file\n");
 		goto error;
 	}
-	
+
 	if (head.offset1 != head.offset2)
 	{
 		printf("WARNING: offsets not equal, results might not be correct\n");
 	}
-	
+
 	fseek(f, head.offset1 + sizeof(dmav_header), SEEK_SET);
 	fread(&t, 4, 1, f);
-	
+
 	if (t == 0)
 	{
 		printf("file has no subtitle data\n");
@@ -133,17 +133,17 @@ int main(int argc, char *argv[])
 	{
 		fseek(f, head.offset1 + sizeof(dmav_header), SEEK_SET);
 	}
-	
+
 	fread(&sub_head, sizeof(dmav_subtitle_header), 1, f);
-	
+
 	sprintf(oname, "%s.html", name);
 	o = fopen(oname, "w");
 	fprintf(o, "<title>%s DMAV</title>\n", name);
 	fprintf(o, "<pre><b>HEADER:</b>\n");
 	fprintf(o, "magic:   DMAV\n");
+	fprintf(o, "version:      0x%08X\n", head.version);
 	fprintf(o, "persona_id:   0x%08X\n", head.persona_id);
 	fprintf(o, "voiceline_id: 0x%08X\n", head.voiceline_id);
-	fprintf(o, "version:      0x%08X\n", head.version);
 	fprintf(o, "offset1:      0x%08X\n", head.offset1);
 	fprintf(o, "u1:           0x%08X\n", head.u1);
 	fprintf(o, "u2:           0x%08X\n", head.u2);
@@ -154,27 +154,27 @@ int main(int argc, char *argv[])
 	fprintf(o, "offset: 0x%08X\n", sub_head.offset);
 	fprintf(o, "u1:     0x%08X\n", sub_head.u1);
 	fprintf(o, "u2:     0x%08X\n\n", sub_head.u2);
-	
+
 	for (i = 0; i < sizeof(langs) * 2; i++)
 	{
 		/*if (parse_table(i))
 		{
 			goto error;
 		}*/
-		
+
 		fprintf(o, "%s: ", langs[i / 2]);
-		
+
 		for (;;)
 		{
 			u16 charcode;
 			fread(&charcode, 2, 1, f);
 			count += 2;
-			
-			if (charcode == 0)
+
+			if (charcode == 0 || feof(f))
 			{
 				break;
 			}
-			
+
 			if (charcode < 0xff)
 			{
 				fprintf(o, "%c", charcode);
@@ -185,13 +185,12 @@ int main(int argc, char *argv[])
 				fprintf(o, "&#%hu;", charcode);
 			}
 		}
-		
-		
+
 		if (count > sub_head.offset)
 		{
 			break;
 		}
-		
+
 		fprintf(o, "\n");
 	}
 end:
@@ -200,7 +199,7 @@ end:
 	{
 		fclose(f);
 	}
-	
+
 	if (o != NULL)
 	{
 		fprintf(o, "</pre>\n");

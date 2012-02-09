@@ -25,11 +25,13 @@
 
 #include "bnk_pc.h"
 #include "char_tbl_latin.h"
+#include "char_tbl_jp.h"
+#include "char_tbl_sk.h"
 
 #define DMAV_OFFSET 212
 
 const char langs[11][3] = {
-"us", "es", "it", "??", "de", "fr", "nl", "cz", "pl", "??", "ru"
+"us", "es", "it", "jp", "de", "fr", "nl", "cz", "pl", "sk", "ru"
 };
 
 int main(int argc, char *argv[])
@@ -126,7 +128,18 @@ int main(int argc, char *argv[])
 				break;
 			}
 			
-			charcode = char_tbl_latin[charcode];
+			if (i / 2 == 3)
+			{
+				charcode =  char_tbl_jp[charcode];
+			}
+			else if (i / 2 == 9)
+			{
+				charcode = char_tbl_sk[charcode];
+			}
+			else
+			{
+				charcode = char_tbl_latin[charcode];
+			}
 			
 			if (charcode < 0xff && !!charcode)
 			{

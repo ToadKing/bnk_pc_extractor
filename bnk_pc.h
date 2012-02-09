@@ -23,6 +23,9 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef _BNK_PC_H
+#define _BNK_PC_H
+
 #define VERSION "1.3"
 
 #ifndef _CRT_SECURE_NO_WARNINGS
@@ -99,3 +102,5 @@ typedef struct
 #pragma pack(pop)
 
 #define is_wav(a) ((a)[0] == 'R' && (a)[1] == 'I' && (a)[2] == 'F' && (a)[3] == 'F')
+
+#endif

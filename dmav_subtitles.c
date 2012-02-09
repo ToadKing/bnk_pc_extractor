@@ -24,57 +24,13 @@
  */
 
 #include "bnk_pc.h"
+#include "char_tbl_latin.h"
 
 #define DMAV_OFFSET 212
 
 const char langs[11][3] = {
-"us", "es", "it", "??", "de", "fr", "nl", "cz", "pl", "??", "??"
+"us", "es", "it", "??", "de", "fr", "nl", "cz", "pl", "??", "ru"
 };
-/*u16 char_tbl[4096] = { 0 };
-u16 char_tbl_len;
-
-int parse_table(int langnum)
-{
-	char name[256];
-	char buffer[1024];
-	FILE *o;
-	u16 len = 0, i;
-
-	sprintf(name, "charlist_%s.dat", langs[langnum / 2]);
-	o = fopen(name, "r");
-
-	if (o == NULL)
-	{
-		printf("cannot open %s for character data\n", name);
-		return 1;
-	}
-
-	while (len == 0)
-	{
-		int t;
-		fgets(buffer, sizeof(buffer), o);
-
-		if (feof(o))
-		{
-			printf("malformed charlist file (%s)\n", name);
-			fclose(o);
-			return 1;
-		}
-
-		sscanf(buffer, "count=%hu\r\n", &len);
-	}
-
-	char_tbl_len = len;
-
-	for (i = 0; i < len; i++)
-	{
-		fscanf(o, "%d\r\n", &char_tbl[i]);
-	}
-
-	fclose(o);
-
-	return 0;
-}*/
 
 int main(int argc, char *argv[])
 {
@@ -157,11 +113,6 @@ int main(int argc, char *argv[])
 
 	for (i = 0; i < sizeof(langs) * 2; i++)
 	{
-		/*if (parse_table(i))
-		{
-			goto error;
-		}*/
-
 		fprintf(o, "%s: ", langs[i / 2]);
 
 		for (;;)
@@ -174,14 +125,16 @@ int main(int argc, char *argv[])
 			{
 				break;
 			}
-
-			if (charcode < 0xff)
+			
+			charcode = char_tbl_latin[charcode];
+			
+			if (charcode < 0xff && !!charcode)
 			{
 				fprintf(o, "%c", charcode);
 			}
+
 			else
 			{
-				//fprintf(o, "&#%hu;", char_tbl[charcode - 0x100]);
 				fprintf(o, "&#%hu;", charcode);
 			}
 		}

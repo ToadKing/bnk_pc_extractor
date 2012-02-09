@@ -17,17 +17,17 @@ SUBTITLES:
 4-7: length from start of subtitle data to start of last entry OR length of subtitle data excluding last entry (2nd copy of 3rd Unknown)
 8-11: ?
 12-15: ?
-16-end: subtitle data (UTF-16, null-terminated)
+16-end: subtitle data (NOT UTF-16, look at char_table_latin.h for table, null-terminated)
 
-SUBTITLE ORDER (come in pairs of identical sets; dialects?):
+SUBTITLE ORDER (come in pairs of identical sets; leftover of dropped dialect support?):
 English
 Spanish
 Italian
-Unknown (not UTF-16)
+Unknown (Probaly Japanese, requires a different lookup table)
 German
 French
 Dutch
 Czech
 Polish
-Unknown (not UTF-16)
-Unknown (not UTF-16)
+Unknown (Probably Korean, requires a different lookup table)
+Russian

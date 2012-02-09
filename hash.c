@@ -5,7 +5,7 @@
 unsigned int hashFnv(char *input)
 {
 	unsigned int hash = 0x811C9DC5;
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < strlen(input); i++)
 	{
@@ -33,7 +33,7 @@ unsigned int hashFnv(char *input)
 unsigned int hashVol(char *input)
 {
 	unsigned int hash = 0;
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < strlen(input); i++)
 	{
@@ -63,7 +63,7 @@ unsigned int hashVol(char *input)
 unsigned int hashAdl(char *input)
 {
 	unsigned int a = 1, b = 0;
-	int i;
+	unsigned int i;
 
 	for (i = 0; i < strlen(input); ++i)
 	{

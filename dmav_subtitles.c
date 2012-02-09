@@ -115,7 +115,7 @@ int parse_table(int langnum)
 	
 	if (!charlists[langnum])
 	{
-		return;
+		return 0;
 	}
 	
 	sprintf(name, "charlist_%s.dat", charlists[langnum]);
@@ -144,7 +144,7 @@ int parse_table(int langnum)
 	for (i = 0; i < len; i++)
 	{
 		u16 c;
-		fscanf(o, "%d\r\n", &c);
+		fscanf(o, "%hu\r\n", &c);
 		
 		if (c <= 0xff)
 		{
@@ -184,7 +184,8 @@ int main(int argc, char *argv[])
 	FILE *o = NULL;
 	dmav_header head;
 	dmav_subtitle_header sub_head[28];
-	int r = 0, t = 0, i = 0, offset = sizeof(sub_head) + 4;
+	u32 i, t = 0, offset = sizeof(sub_head) + 4;
+	int r = 0;
 	char name[1024];
 	char oname[1024];
 
@@ -250,7 +251,7 @@ int main(int argc, char *argv[])
 	}
 
 	// loop 1: get subtitle headers
-	for (i = 0; i < sizeof(sub_head) / sizeof(*sub_head); i++)
+	for (i = 0; (unsigned int) i < sizeof(sub_head) / sizeof(*sub_head); i++)
 	{
 		if (offset == sizeof(dmav_subtitle_header) * 2 && i > 1)
 		{
@@ -264,7 +265,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < sizeof(sub_head) / sizeof(*sub_head); i++)
 	{
 		int l = i % 14;
-		int count = 0;
+		u32 count = 0;
 
 		if (offset == sizeof(dmav_subtitle_header) * 2 && i > 1)
 		{

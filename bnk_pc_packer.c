@@ -30,7 +30,7 @@
 
 #define PADDING_LENGTH 0x800
 
-const static u8 padding[PADDING_LENGTH] = { 0 };
+static const u8 padding[PADDING_LENGTH] = { 0 };
 
 void padFile(FILE *f)
 {
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 	for (i = 0; i < head.count; i++)
 	{
 		unsigned int temp;
-		int j;
+		u32 j;
 		char _filename[1024];
 		char *filename = _filename;
 
@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
 
 		if (entries[i].dmav != 0)
 		{
+			u32 tell;
 			memcpy(_dmavname, filenames[i], strlen(filenames[i]) + 1);
 			_dmavname[strrchr(_dmavname, '.') - _dmavname] = 0;
 			sprintf(dmavname, "%s.dmav", _dmavname);
@@ -162,10 +163,11 @@ int main(int argc, char *argv[])
 			}
 
 			fseek(in, 0, SEEK_END);
+			tell = ftell(in);
 
-			if(ftell(in) != entries[i].dmav)
+			if(tell != entries[i].dmav)
 			{
-				printf("DMAV (%s) wrong size; got %d, should be %d\n", dmavname, ftell(in), entries[i].dmav);
+				printf("DMAV (%s) wrong size; got %d, should be %d\n", dmavname, tell, entries[i].dmav);
 				fclose(in);
 				goto error;
 			}

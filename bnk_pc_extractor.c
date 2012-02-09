@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
 
 	for(i = 0; i < head.count; i++)
 	{
-		int currPos;
+		u32 currPos;
 		u8 *buffer;
 		char filename[1024];
 		FILE *sav;

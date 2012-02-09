@@ -93,10 +93,8 @@ typedef struct
 
 typedef struct
 {
-	u32 last; // length of last/longest subtitle entry?
-	u32 offset; // length from start of subtitle data to start of last entry OR length of subtitle data excluding last entry (2nd copy of 3rd Unknown)
-	u32 u1;
-	u32 u2;
+	u32 size; // length of subtitle entry
+	u32 offset; // offset from end of subtitle entry metadatas
 } dmav_subtitle_header;
 
 #pragma pack(pop)

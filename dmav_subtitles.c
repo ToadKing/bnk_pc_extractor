@@ -28,10 +28,38 @@
 #include "char_tbl_jp.h"
 #include "char_tbl_sk.h"
 
-#define DMAV_OFFSET 212
+const char langs[14][3] = {
+"us",
+"es",
+"it",
+"jp",
+"de",
+"fr",
+"nl",
+"??",
+"??",
+"cz",
+"pl",
+"sk",
+"ru",
+"??"
+};
 
-const char langs[11][3] = {
-"us", "es", "it", "jp", "de", "fr", "nl", "cz", "pl", "sk", "ru"
+const u16 *lang_tables[14] = {
+char_tbl_latin,
+char_tbl_latin,
+char_tbl_latin,
+char_tbl_jp,
+char_tbl_latin,
+char_tbl_latin,
+char_tbl_latin,
+0,
+0,
+char_tbl_latin,
+char_tbl_latin,
+char_tbl_sk,
+char_tbl_latin,
+0
 };
 
 int main(int argc, char *argv[])
@@ -39,8 +67,8 @@ int main(int argc, char *argv[])
 	FILE *f = NULL;
 	FILE *o = NULL;
 	dmav_header head;
-	dmav_subtitle_header sub_head;
-	int r = 0, count = 0, t = 0, i = 0;
+	dmav_subtitle_header sub_head[28];
+	int r = 0, t = 0, i = 0, offset = sizeof(sub_head) + 4;
 	char name[1024];
 	char oname[1024];
 
@@ -83,16 +111,6 @@ int main(int argc, char *argv[])
 		printf("file has no subtitle data\n");
 		goto end;
 	}
-	else if (t == 2)
-	{
-		fseek(f, head.offset1 + sizeof(dmav_header) + DMAV_OFFSET, SEEK_SET);
-	}
-	else
-	{
-		fseek(f, head.offset1 + sizeof(dmav_header), SEEK_SET);
-	}
-
-	fread(&sub_head, sizeof(dmav_subtitle_header), 1, f);
 
 	sprintf(oname, "%s.html", name);
 	o = fopen(oname, "w");
@@ -107,57 +125,61 @@ int main(int argc, char *argv[])
 	fprintf(o, "u2:           0x%08X\n", head.u2);
 	fprintf(o, "offset2:      0x%08X\n", head.offset2);
 	fprintf(o, "u3:           0x%08X\n\n", head.u3);
-	fprintf(o, "<b>SUBTITLE HEADER:</b>\n");
-	fprintf(o, "last:   0x%08X\n", sub_head.last);
-	fprintf(o, "offset: 0x%08X\n", sub_head.offset);
-	fprintf(o, "u1:     0x%08X\n", sub_head.u1);
-	fprintf(o, "u2:     0x%08X\n\n", sub_head.u2);
+	fprintf(o, "<b>SUBTITLE HEADERS:</b>\n\n");
 
-	for (i = 0; i < sizeof(langs) * 2; i++)
+	if (t != 2)
 	{
-		fprintf(o, "%s: ", langs[i / 2]);
+		fseek(f, head.offset1 + sizeof(dmav_header), SEEK_SET);
+		offset = sizeof(dmav_subtitle_header) * 2;
+	}
 
-		for (;;)
+	// loop 1: get subtitle headers
+	for (i = 0; i < sizeof(sub_head) / sizeof(*sub_head); i++)
+	{
+		if (offset == sizeof(dmav_subtitle_header) * 2 && i > 1)
+		{
+			break;
+		}
+
+		fread(&sub_head[i], sizeof(dmav_subtitle_header), 1, f);
+	}
+
+	// loop 2: output headers + get subtitles
+	for (i = 0; i < sizeof(sub_head) / sizeof(*sub_head); i++)
+	{
+		int l = i % 14;
+		int count = 0;
+
+		if (offset == sizeof(dmav_subtitle_header) * 2 && i > 1)
+		{
+			break;
+		}
+
+		fprintf(o, "size: 0x%08X\n", sub_head[i].size);
+		fprintf(o, "offset: 0x%08X\n", sub_head[i].offset);
+		fprintf(o, "%s: ", langs[l]);
+
+		fseek(f, head.offset1 + sizeof(dmav_header) + offset + sub_head[i].offset, SEEK_SET);
+
+		while (count + 2 < sub_head[i].size)
 		{
 			u16 charcode;
+
 			fread(&charcode, 2, 1, f);
 			count += 2;
+			charcode = lang_tables[l][charcode];
 
-			if (charcode == 0 || feof(f))
-			{
-				break;
-			}
-			
-			if (i / 2 == 3)
-			{
-				charcode =  char_tbl_jp[charcode];
-			}
-			else if (i / 2 == 9)
-			{
-				charcode = char_tbl_sk[charcode];
-			}
-			else
-			{
-				charcode = char_tbl_latin[charcode];
-			}
-			
 			if (charcode < 0xff && !!charcode)
 			{
 				fprintf(o, "%c", charcode);
 			}
-
 			else
 			{
 				fprintf(o, "&#%hu;", charcode);
 			}
 		}
 
-		if (count > sub_head.offset)
-		{
-			break;
-		}
-
-		fprintf(o, "\n");
+		fprintf(o, "\n\n");
 	}
 end:
 

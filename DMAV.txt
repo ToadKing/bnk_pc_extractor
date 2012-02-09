@@ -10,24 +10,24 @@ DMAV:
 32-35: ?
 
 SOME DATA (at offset [16-19] + DMAV header size [36]), 212 bytes long:
-0-4: if not equal to 2, then this is subtitle data? 0 means no subtitles and the DMAV section is over
+0-4: if not equal to 2, then this is subtitle data(?), with two entries total. if equal to 2, it means 28 subtitle entries FOLLOW this. 0 means no subtitles and the DMAV section is over
 
 SUBTITLES:
-0-3: length of last/longest subtitle entry?
-4-7: length from start of subtitle data to start of last entry OR length of subtitle data excluding last entry (2nd copy of 3rd Unknown)
-8-11: ?
-12-15: ?
-16-end: subtitle data (NOT UTF-16, look at char_table_latin.h for table, null-terminated)
+0-3: length of entry
+4-7: offset of entry, starting from the first entry (after the subtitle metadata)
 
-SUBTITLE ORDER (come in pairs of identical sets; leftover of dropped dialect support?):
+SUBTITLE ORDER (this list is repeated once; leftover of dropped dialect support?):
 English
 Spanish
 Italian
-Unknown (Probaly Japanese, requires a different lookup table)
+Japanese (requires a different lookup table)
 German
 French
 Dutch
+Unknown (Always 0 length, 0 offset)
+Unknown (Always 0 length, 0 offset)
 Czech
 Polish
-Unknown (Probably Korean, requires a different lookup table)
+Korean (requires a different lookup table)
 Russian
+Unknown (Always 0 length, 0 offset)

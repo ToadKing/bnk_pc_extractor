@@ -28,6 +28,8 @@
 #include "char_tbl_jp.h"
 #include "char_tbl_sk.h"
 
+//#define GENERATE_CHARTABLES
+
 const char langs[14][3] = {
 "us",
 "es",
@@ -61,6 +63,120 @@ char_tbl_sk,
 char_tbl_latin,
 0
 };
+
+#ifdef GENERATE_CHARTABLES
+
+// all the latin/cyrillic character tables are identical
+const char *charlists[14] = {
+"us",
+"us",
+"us",
+"jp",
+"us",
+"us",
+"us",
+0,
+0,
+"us",
+"us",
+"sk",
+"us",
+0
+};
+
+const u16 *charlists_lengths[14] = {
+&char_tbl_latin_size,
+&char_tbl_latin_size,
+&char_tbl_latin_size,
+&char_tbl_jp_size,
+&char_tbl_latin_size,
+&char_tbl_latin_size,
+&char_tbl_latin_size,
+0,
+0,
+&char_tbl_latin_size,
+&char_tbl_latin_size,
+&char_tbl_sk_size,
+&char_tbl_latin_size,
+0
+};
+
+u16 gen_table[0x10000];
+
+int parse_table(int langnum)
+{
+	char name[256];
+	char buffer[1024];
+	FILE *o;
+	u16 len = 0;
+	int i, offset = 256;
+	
+	memset(gen_table, 0, sizeof(gen_table));
+	
+	if (!charlists[langnum])
+	{
+		return;
+	}
+	
+	sprintf(name, "charlist_%s.dat", charlists[langnum]);
+	o = fopen(name, "r");
+	
+	if (o == NULL)
+	{
+		printf("cannot open %s for character data\n", name);
+		return 1;
+	}
+	
+	while (len == 0)
+	{
+		fgets(buffer, sizeof(buffer), o);
+		
+		if (feof(o))
+		{
+			printf("malformed charlist file (%s)\n", name);
+			fclose(o);
+			return 1;
+		}
+		
+		sscanf(buffer, "count=%hu\r\n", &len);
+	}
+	
+	for (i = 0; i < len; i++)
+	{
+		u16 c;
+		fscanf(o, "%d\r\n", &c);
+		
+		if (c <= 0xff)
+		{
+			gen_table[c] = c;
+		}
+		else
+		{
+			gen_table[offset++] = c;
+		}
+	}
+	
+	// check it
+	
+	if (len != *charlists_lengths[langnum])
+	{
+		printf("GENERROR ON %d (%s): Wrong length (expected %d, got %d)\n", langnum, name, *charlists_lengths[langnum], len);
+	}
+	
+	for (i = 0; i < *charlists_lengths[langnum]; i++)
+	{
+		if (gen_table[i] != lang_tables[langnum][i])
+		{
+			printf("GENERROR ON %d (%s): Wrong character at offset %d (expected %d, got %d)\n", langnum, name, i, lang_tables[langnum][i], gen_table[i]);
+		}
+	}
+	
+	fclose(o);
+	
+	return 0;
+}
+
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -155,6 +271,14 @@ int main(int argc, char *argv[])
 			break;
 		}
 
+		#ifdef GENERATE_CHARTABLES
+		if (parse_table(l))
+		{
+			printf("failed to parse chartable for %s\n", charlists[l]);
+			goto error;
+		}
+		#endif
+		
 		fprintf(o, "size: 0x%08X\n", sub_head[i].size);
 		fprintf(o, "offset: 0x%08X\n", sub_head[i].offset);
 		fprintf(o, "%s: ", langs[l]);
@@ -167,7 +291,11 @@ int main(int argc, char *argv[])
 
 			fread(&charcode, 2, 1, f);
 			count += 2;
+			#ifdef GENERATE_CHARTABLES
+			charcode = gen_table[charcode];
+			#else
 			charcode = lang_tables[l][charcode];
+			#endif
 
 			if (charcode < 0xff && !!charcode)
 			{

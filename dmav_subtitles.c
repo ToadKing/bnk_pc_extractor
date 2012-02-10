@@ -110,42 +110,42 @@ int parse_table(int langnum)
 	FILE *o;
 	u16 len = 0;
 	int i, offset = 256;
-	
+
 	memset(gen_table, 0, sizeof(gen_table));
-	
+
 	if (!charlists[langnum])
 	{
 		return 0;
 	}
-	
+
 	sprintf(name, "charlist_%s.dat", charlists[langnum]);
 	o = fopen(name, "r");
-	
+
 	if (o == NULL)
 	{
 		printf("cannot open %s for character data\n", name);
 		return 1;
 	}
-	
+
 	while (len == 0)
 	{
 		fgets(buffer, sizeof(buffer), o);
-		
+
 		if (feof(o))
 		{
 			printf("malformed charlist file (%s)\n", name);
 			fclose(o);
 			return 1;
 		}
-		
+
 		sscanf(buffer, "count=%hu\r\n", &len);
 	}
-	
+
 	for (i = 0; i < len; i++)
 	{
 		u16 c;
 		fscanf(o, "%hu\r\n", &c);
-		
+
 		if (c <= 0xff)
 		{
 			gen_table[c] = c;
@@ -155,24 +155,25 @@ int parse_table(int langnum)
 			gen_table[offset++] = c;
 		}
 	}
-	
+
 	// check it
-	
+
 	if (len != *charlists_lengths[langnum])
 	{
 		printf("GENERROR ON %d (%s): Wrong length (expected %d, got %d)\n", langnum, name, *charlists_lengths[langnum], len);
 	}
-	
-	for (i = 0; i < *charlists_lengths[langnum]; i++)
+
+	// + 256 to account for unassigned characters in the 0 -> 255 range
+	for (i = 0; i < *charlists_lengths[langnum] + 256; i++)
 	{
 		if (gen_table[i] != lang_tables[langnum][i])
 		{
 			printf("GENERROR ON %d (%s): Wrong character at offset %d (expected %d, got %d)\n", langnum, name, i, lang_tables[langnum][i], gen_table[i]);
 		}
 	}
-	
+
 	fclose(o);
-	
+
 	return 0;
 }
 
@@ -279,7 +280,7 @@ int main(int argc, char *argv[])
 			goto error;
 		}
 		#endif
-		
+
 		fprintf(o, "size: 0x%08X\n", sub_head[i].size);
 		fprintf(o, "offset: 0x%08X\n", sub_head[i].offset);
 		fprintf(o, "%s: ", langs[l]);

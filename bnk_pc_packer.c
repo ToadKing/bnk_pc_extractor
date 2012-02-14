@@ -80,6 +80,9 @@ int main(int argc, char *argv[])
 	fscanf(f, "k3:     0x%08X\n", &(head.k3));
 	fscanf(f, "count:  0x%08X\n", &(head.count));
 
+	// set this automatically, for hand-edited files
+	head.k3 = sizeof(head) + (head.count + 1) * sizeof(entry);
+
 	out = fopen(argv[2], "wb");
 	fwrite(&head, sizeof(header), 1, out);
 	entries = calloc(head.count, sizeof(entry));
@@ -88,7 +91,7 @@ int main(int argc, char *argv[])
 	// loop 1: go through the log file and get the unknown metadata
 	for (i = 0; i < head.count; i++)
 	{
-		unsigned int temp;
+		u32 temp;
 		u32 j;
 		char _filename[1024];
 		char *filename = _filename;
@@ -147,6 +150,11 @@ int main(int argc, char *argv[])
 		char _dmavname[1024];
 		char dmavname[1024];
 		entries[i].offset = ftell(out);
+
+		if (entries[i].offset > 0x08000000)
+		{
+			printf("WARNING! audio bank is too long! Sound %05u (0x%08X) will not play\n", i, entries[i].id);
+		}
 
 		if (entries[i].dmav != 0)
 		{

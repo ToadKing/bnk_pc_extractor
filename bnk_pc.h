@@ -26,7 +26,7 @@
 #ifndef _BNK_PC_H
 #define _BNK_PC_H
 
-#define VERSION "1.3"
+#define VERSION "1.4"
 
 #ifndef _CRT_SECURE_NO_WARNINGS
 #define _CRT_SECURE_NO_WARNINGS

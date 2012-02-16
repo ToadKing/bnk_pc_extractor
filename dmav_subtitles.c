@@ -181,18 +181,16 @@ int parse_table(int langnum)
 
 void u16fprintf(FILE *f, char *format, ...)
 {
-	char buffer1[1024];
-	char buffer2[1024] = { 0 };
+	char buffer[1024];
 	va_list args;
 	u32 i;
-	va_start(args, format);
-	vsprintf(buffer1, format, args);
-	strcat(buffer2, buffer1);
-	va_end(args);
 
-	for (i = 0; i < strlen(buffer2); i++)
+	va_start(args, format);
+	vsprintf(buffer, format, args);
+
+	for (i = 0; i < strlen(buffer); i++)
 	{
-		u16 c = buffer2[i];
+		u16 c = buffer[i];
 		const u16 r = '\r';
 
 		if (c == '\n')
@@ -202,6 +200,8 @@ void u16fprintf(FILE *f, char *format, ...)
 
 		fwrite(&c, 2, 1, f);
 	}
+
+	va_end(args);
 }
 
 #define fprintf u16fprintf

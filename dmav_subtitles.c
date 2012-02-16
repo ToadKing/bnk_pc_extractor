@@ -105,7 +105,7 @@ u16 gen_table[0x10000];
 
 int parse_table(int langnum)
 {
-	char name[256];
+	char name[1024];
 	char buffer[1024];
 	FILE *o;
 	u16 len = 0;
@@ -179,6 +179,33 @@ int parse_table(int langnum)
 
 #endif
 
+void u16fprintf(FILE *f, char *format, ...)
+{
+	char buffer1[1024];
+	char buffer2[1024] = { 0 };
+	va_list args;
+	u32 i;
+	va_start(args, format);
+	vsprintf(buffer1, format, args);
+	strcat(buffer2, buffer1);
+	va_end(args);
+
+	for (i = 0; i < strlen(buffer2); i++)
+	{
+		u16 c = buffer2[i];
+		const u16 r = '\r';
+
+		if (c == '\n')
+		{
+			fwrite(&r, 2, 1, f);
+		}
+
+		fwrite(&c, 2, 1, f);
+	}
+}
+
+#define fprintf u16fprintf
+
 int main(int argc, char *argv[])
 {
 	FILE *f = NULL;
@@ -186,6 +213,7 @@ int main(int argc, char *argv[])
 	dmav_header head;
 	dmav_subtitle_header sub_head[28];
 	u32 i, t = 0, offset = sizeof(sub_head) + 4;
+	const u16 bom = 0xFEFF;
 	int r = 0;
 	char name[1024];
 	char oname[1024];
@@ -230,10 +258,10 @@ int main(int argc, char *argv[])
 		goto end;
 	}
 
-	sprintf(oname, "%s.html", name);
-	o = fopen(oname, "w");
-	fprintf(o, "<title>%s DMAV</title>\n", name);
-	fprintf(o, "<pre><b>HEADER:</b>\n");
+	sprintf(oname, "%s_subs.txt", name);
+	o = fopen(oname, "wb");
+	fwrite(&bom, 2, 1, o); // Byte-order mask for utf-16
+	fprintf(o, "HEADER:\n");
 	fprintf(o, "magic:        \"DMAV\"\n");
 	fprintf(o, "version:      0x%08X\n", head.version);
 	fprintf(o, "persona_id:   0x%08X\n", head.persona_id);
@@ -243,7 +271,7 @@ int main(int argc, char *argv[])
 	fprintf(o, "u2:           0x%08X\n", head.u2);
 	fprintf(o, "offset2:      0x%08X\n", head.offset2);
 	fprintf(o, "u3:           0x%08X\n\n", head.u3);
-	fprintf(o, "<b>SUBTITLE HEADERS:</b>\n\n");
+	fprintf(o, "SUBTITLE HEADERS:\n\n");
 
 	if (t != 2)
 	{
@@ -299,14 +327,7 @@ int main(int argc, char *argv[])
 			charcode = lang_tables[l][charcode];
 			#endif
 
-			if (charcode < 0xff && !!charcode)
-			{
-				fprintf(o, "%c", charcode);
-			}
-			else
-			{
-				fprintf(o, "&#%hu;", charcode);
-			}
+			fwrite(&charcode, 2, 1, o);
 		}
 
 		fprintf(o, "\n\n");
@@ -320,7 +341,6 @@ end:
 
 	if (o != NULL)
 	{
-		fprintf(o, "</pre>\n");
 		fclose(o);
 	}
 

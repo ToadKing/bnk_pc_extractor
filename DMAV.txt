@@ -3,20 +3,23 @@ DMAV:
 4-7: 1 (version?)
 8-11: Persona ID (<Persona_id> in character's voice table, voc_sb_line_sit.xtbl, and voice_dynamic_dialog_events.xtbl, <wwise_id> in audio_personas.xtbl)
 12-15: Voiceline ID (<Voiceline_id> in voice_control.xtbl, <wwise_id> in audio_line_tags.xtbl)
-16-19: some offset, same as 28-31
-20-23: ?
-24-27: ?
-28-31: some offset, same as 16-19
-32-35: ?
+16-19: "subtitle offset", offset to subtitle data (from end of dmav header), same as 28-31
+20-23: ?, usually 0
+24-27: length of subtitle data, including "2" value before start of subtitle headers
+28-31: "subtitle offset", offset to subtitle data (from end of dmav header), same as 16-19, not sure why it's in here twice
+32-35: length of soundclip in milliseconds
 
-SOME DATA (at offset [16-19] + DMAV header size [36]), 212 bytes long:
-0-4: if not equal to 2, then this is subtitle data(?), with two entries total. if equal to 2, it means 28 subtitle entries FOLLOW this. 0 means no subtitles and the DMAV section is over
+SOME DATA (at offset DMAV header size [36]), subtitle offset bytes long:
+Not sure what this is yet, could be lip sync data or something.
 
-SUBTITLES:
+SUBTITLES (at offset DMAV header size [36] + subtitle offset):
+0-4: if not equal to 2, then this is subtitle data, with two entries total (only seems to happen in one unused brute subtitled soundclip, in voc_brute_mission_media.bnk_pc, so this may not be the correct behavior). if equal to 2, it means 28 subtitle entries FOLLOW this. 0 means no subtitles and the DMAV section is over.
+
+ENTRIES (either 2 or 28 times):
 0-3: length of entry
 4-7: offset of entry, starting from the first entry (after the subtitle metadata)
 
-SUBTITLE ORDER (this list is repeated once; leftover of dropped dialect support?):
+SUBTITLE ORDER (list repeats itself once; leftover of dropped dialect support?):
 English
 Spanish
 Italian

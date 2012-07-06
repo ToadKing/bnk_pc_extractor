@@ -83,11 +83,11 @@ typedef struct
 	u32 version; // 1
 	u32 persona_id; // <Persona_id> in character's voice table, voc_sb_line_sit.xtbl, and voice_dynamic_dialog_events.xtbl, <wwise_id> in audio_personas.xtbl
 	u32 voiceline_id; // <Voiceline_id> in voice_control.xtbl, <wwise_id> in audio_line_tags.xtbl
-	u32 offset1; // same as offset2
-	u32 u1;
-	u32 u2;
-	u32 offset2; // same as offset1
-	u32 u3;
+	u32 offset1; // offset to subtitle data (from end of dmav header), same as offset2
+	u32 u1; // usually 0
+	u32 sub_length; // length of subtitle data, including "2" value before start of subtitle headers
+	u32 offset2; // offset to subtitle data (from end of dmav header), same as offset1
+	u32 len; // length of soundclip in milliseconds
 } dmav_header;
 
 typedef struct
